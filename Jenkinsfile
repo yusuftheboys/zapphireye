@@ -90,9 +90,28 @@ pipeline {
                 }
             }
             steps {
+                sh 'echo il0v3mys3lf | docker login -u yusuftheboys --password-stdin'
                 sh 'docker build -t zapphireye:0.1 .'
+                sh 'docker push yusuftheboys/zapphireye'
             }
         }
+
+         stage('Deploy Docker Image') {
+            agent {
+                docker {
+                    image 'kroniak/ssh-client'
+                    args '--user root --network host'
+                }
+            }
+            steps {
+                withCredentials([sshUserPrivateKey(credentialsId: "DeploymentSSHKey", keyFileVariable: 'keyfile')]) {
+                    sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no yusuftheboys@10.0.2.15 "echo il0v3mys3lf | docker login -u yusuftheboys --password-stdin"'
+                    sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no yusuftheboys@10.0.2.15 docker pull yusuftheboys/zapphireye'
+                    sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no yusuftheboys@10.0.2.15 docker rm --force zapphireye'
+                    sh 'ssh -i ${keyfile} -o StrictHostKeyChecking=no yusuftheboys@10.0.2.15 docker run -it --detach -p 4000:4000 --name zapphireye --network host yusuftheboys/zapphireye'
+                }
+            }
+         }
 
     }
 }
