@@ -91,7 +91,7 @@ pipeline {
             }
             steps {
                 sh 'echo il0v3mys3lf | docker login -u yusuftheboys --password-stdin'
-                sh 'docker build -t zapphireye:0.1 .'
+                sh 'docker build -t yusuftheboys/zapphireye .'
                 sh 'docker push yusuftheboys/zapphireye'
             }
         }
